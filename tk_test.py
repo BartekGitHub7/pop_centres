@@ -2,12 +2,41 @@ from tkinter import *
 import tkintermapview
 
 centres = [
-    {"name": "Centrum Konferencyjne w Warszawie", "clients":[{"name": "Mariusz Pudzianowski", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Poznaniu"]}, {"name": "Władysław Łokietek", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Gdańsku"]}], "employees":[{"name": "Anna Nowak"}, {"name": "Piotr Kowalski"}]},
-    {"name": "Centrum Konferencyjne w Poznaniu", "clients":[{"name": "Mariusz Pudzianowski", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Poznaniu"]}, {"name": "Adam Nowak", "reservation": ["Centrum Konferencyjne w Poznaniu", "Centrum Konferencyjne w Krakowie"]}], "employees":[{"name": "Klaudia Mickiewicz"}, {"name": "Krzysztof Wiśniewski"}]},
-    {"name": "Centrum Konferencyjne w Gdańsku", "clients":[{"name": "Jan Kowalski", "reservation": ["Centrum Konferencyjne w Lublinie", "Centrum Konferencyjne w Gdańsku"]}, {"name": "Władysław Łokietek", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Gdańsku"]}], "employees":[{"name": "Marta Kwiatkowska"}, {"name": "Tomasz Jankowski"}]},
-    {"name": "Centrum Konferencyjne w Krakowie", "clients":[{"name": "Adam Nowak", "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Poznaniu"]}, {"name": "Ferdynand Kiepski", "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Lublinie"]}], "employees":[{"name": "Julia Wiśniewska"}, {"name": "Michał Kamiński"}]},
-    {"name": "Centrum Konferencyjne w Lublinie", "clients":[{"name": "Jan Kowalski", "reservation": ["Centrum Konferencyjne w Lublinie", "Centrum Konferencyjne w Gdańsku"]}, {"name": "Ferdynand Kiepski", "reservation": ["Centrum Konferencyjne w Lublinie", "Centrum Konferencyjne w Krakowie"]}], "employees":[{"name": "Agnieszka Wojciechowska"}, {"name": "Adam Woźniak"}]},
+    {"name": "Centrum Konferencyjne w Warszawie", "clients": [{"name": "Mariusz Pudzianowski",
+                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                               "Centrum Konferencyjne w Poznaniu"]},
+                                                              {"name": "Władysław Łokietek",
+                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                               "Centrum Konferencyjne w Gdańsku"]}],
+     "employees": [{"name": "Anna Nowak"}, {"name": "Piotr Kowalski"}]},
+    {"name": "Centrum Konferencyjne w Poznaniu", "clients": [{"name": "Mariusz Pudzianowski",
+                                                              "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                              "Centrum Konferencyjne w Poznaniu"]},
+                                                             {"name": "Adam Nowak",
+                                                              "reservation": ["Centrum Konferencyjne w Poznaniu",
+                                                                              "Centrum Konferencyjne w Krakowie"]}],
+     "employees": [{"name": "Klaudia Mickiewicz"}, {"name": "Krzysztof Wiśniewski"}]},
+    {"name": "Centrum Konferencyjne w Gdańsku", "clients": [{"name": "Jan Kowalski",
+                                                             "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                             "Centrum Konferencyjne w Gdańsku"]},
+                                                            {"name": "Władysław Łokietek",
+                                                             "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                             "Centrum Konferencyjne w Gdańsku"]}],
+     "employees": [{"name": "Marta Kwiatkowska"}, {"name": "Tomasz Jankowski"}]},
+    {"name": "Centrum Konferencyjne w Krakowie", "clients": [
+        {"name": "Adam Nowak", "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Poznaniu"]},
+        {"name": "Ferdynand Kiepski",
+         "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Lublinie"]}],
+     "employees": [{"name": "Julia Wiśniewska"}, {"name": "Michał Kamiński"}]},
+    {"name": "Centrum Konferencyjne w Lublinie", "clients": [{"name": "Jan Kowalski",
+                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                              "Centrum Konferencyjne w Gdańsku"]},
+                                                             {"name": "Ferdynand Kiepski",
+                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                              "Centrum Konferencyjne w Krakowie"]}],
+     "employees": [{"name": "Agnieszka Wojciechowska"}, {"name": "Adam Woźniak"}]},
 ]
+
 
 class CentreManager:
     def __init__(self, root):
@@ -22,9 +51,9 @@ class CentreManager:
         self.frame_details = Frame(root, width=700, height=800, padx=10, pady=10)
         self.frame_map = Frame(root, width=800, height=800, padx=10, pady=10)
 
-        self.frame_list.grid(row=0, column=0, padx=10, pady=10, sticky=N+S)
-        self.frame_details.grid(row=0, column=1, padx=10, pady=10, sticky=N+S)
-        self.frame_map.grid(row=0, column=2, padx=10, pady=10, sticky=N+S+E+W)
+        self.frame_list.grid(row=0, column=0, padx=10, pady=10, sticky=N + S)
+        self.frame_details.grid(row=0, column=1, padx=10, pady=10, sticky=N + S)
+        self.frame_map.grid(row=0, column=2, padx=10, pady=10, sticky=N + S + E + W)
 
         self.root.grid_columnconfigure(2, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
@@ -75,9 +104,12 @@ class CentreManager:
         self.button_update_employee = Button(self.frame_details, text='Edytuj pracownika', command=self.update_employee)
 
         self.button_add_reservation = Button(self.frame_details, text='Dodaj rezerwację', command=self.add_reservation)
-        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację', command=self.remove_reservation)
-        self.button_update_reservation = Button(self.frame_details, text='Edytuj rezerwację', command=self.update_reservation)
-        self.button_show_reservations = Button(self.frame_details, text='Pokaż rezerwacje', command=self.show_reservations)
+        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację',
+                                                command=self.remove_reservation)
+        self.button_update_reservation = Button(self.frame_details, text='Edytuj rezerwację',
+                                                command=self.update_reservation)
+        self.button_show_reservations = Button(self.frame_details, text='Pokaż rezerwacje',
+                                               command=self.show_reservations)
 
         self.label_details.grid(row=0, column=0, columnspan=4, pady=5)
         self.label_name.grid(row=1, column=0, sticky=W)
@@ -247,6 +279,7 @@ class CentreManager:
             self.selected_centre['employees'][selected_index[0]]['name'] = employee_name
             self.refresh_employee_list()
             self.entry_employee_name.delete(0, END)
+
 
 if __name__ == "__main__":
     root = Tk()
