@@ -1,8 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
 import tkintermapview
-import requests
-from bs4 import BeautifulSoup
 
 centres = [
     {"name": "Centrum Konferencyjne w Warszawie", "clients":[{"name": "Mariusz Pudzianowski", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Poznaniu"]}, {"name": "Władysław Łokietek", "reservation": ["Centrum Konferencyjne w Warszawie", "Centrum Konferencyjne w Gdańsku"]}], "employees":[{"name": "Anna Nowak"}, {"name": "Piotr Kowalski"}]},
@@ -15,19 +12,24 @@ centres = [
 class CentreManager:
     def __init__(self, root):
         self.root = root
-        self.root.geometry("1200x800")
+        self.root.state('zoomed')  # Fullscreen
         self.root.title("Centre Manager")
 
         self.centres = centres
 
-        self.frame_list = Frame(root, width=400, height=600, padx=10, pady=10)  # Changed width and height
-        self.frame_details = Frame(root, width=700, height=600, padx=10, pady=10)  # Changed width
-        self.frame_map = Frame(root, width=1100, height=400, padx=10, pady=10)
+        # Frames
+        self.frame_list = Frame(root, width=300, height=800, padx=10, pady=10)
+        self.frame_details = Frame(root, width=700, height=800, padx=10, pady=10)
+        self.frame_map = Frame(root, width=800, height=800, padx=10, pady=10)
 
-        self.frame_list.grid(row=0, column=0, padx=10, pady=10, sticky=N)
-        self.frame_details.grid(row=0, column=1, padx=10, pady=10, sticky=N)
-        self.frame_map.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky=N)
+        self.frame_list.grid(row=0, column=0, padx=10, pady=10, sticky=N+S)
+        self.frame_details.grid(row=0, column=1, padx=10, pady=10, sticky=N+S)
+        self.frame_map.grid(row=0, column=2, padx=10, pady=10, sticky=N+S+E+W)
 
+        self.root.grid_columnconfigure(2, weight=1)
+        self.root.grid_rowconfigure(0, weight=1)
+
+        # Setup frames
         self.setup_list_frame()
         self.setup_details_frame()
         self.setup_map_frame()
@@ -37,18 +39,18 @@ class CentreManager:
 
     def setup_list_frame(self):
         self.label_list = Label(self.frame_list, text='Lista Centrów Konferencyjnych')
-        self.listbox_centres = Listbox(self.frame_list, width=40, height=30)  # Changed width
+        self.listbox_centres = Listbox(self.frame_list, width=40, height=25)
         self.button_show_details = Button(self.frame_list, text='Pokaż szczegóły', command=self.show_centre_details)
         self.button_add_centre = Button(self.frame_list, text='Dodaj centrum', command=self.add_centre)
         self.button_remove_centre = Button(self.frame_list, text='Usuń centrum', command=self.remove_centre)
         self.button_update_centre = Button(self.frame_list, text='Edytuj centrum', command=self.update_centre)
 
-        self.label_list.grid(row=0, column=0, columnspan=3, pady=5)
-        self.listbox_centres.grid(row=1, column=0, columnspan=3, pady=5)
-        self.button_show_details.grid(row=2, column=0, pady=5)
-        self.button_add_centre.grid(row=2, column=1, pady=5)
-        self.button_remove_centre.grid(row=2, column=2, pady=5)
-        self.button_update_centre.grid(row=3, column=0, columnspan=3, pady=5)
+        self.label_list.pack(pady=5)
+        self.listbox_centres.pack(pady=5)
+        self.button_show_details.pack(side=LEFT, padx=5)
+        self.button_add_centre.pack(side=LEFT, padx=5)
+        self.button_remove_centre.pack(side=LEFT, padx=5)
+        self.button_update_centre.pack(side=LEFT, padx=5)
 
         self.refresh_centre_list()
 
@@ -57,14 +59,13 @@ class CentreManager:
         self.label_name = Label(self.frame_details, text='Nazwa centrum')
         self.entry_name = Entry(self.frame_details, width=50)
         self.label_clients = Label(self.frame_details, text='Klienci')
-        self.listbox_clients = Listbox(self.frame_details, width=40, height=15)  # Changed width and height
-        self.button_show_reservations = Button(self.frame_details, text='Pokaż rezerwacje', command=self.show_reservations)
+        self.listbox_clients = Listbox(self.frame_details, width=30, height=10)
         self.label_employees = Label(self.frame_details, text='Pracownicy')
-        self.listbox_employees = Listbox(self.frame_details, width=40, height=15)  # Changed width and height
+        self.listbox_employees = Listbox(self.frame_details, width=30, height=10)
 
         self.entry_client_name = Entry(self.frame_details, width=30)
         self.entry_employee_name = Entry(self.frame_details, width=30)
-        self.entry_reservation_name = Entry(self.frame_details, width=60)
+        self.entry_reservation_name = Entry(self.frame_details, width=30)
 
         self.button_add_client = Button(self.frame_details, text='Dodaj klienta', command=self.add_client)
         self.button_remove_client = Button(self.frame_details, text='Usuń klienta', command=self.remove_client)
@@ -76,36 +77,37 @@ class CentreManager:
         self.button_add_reservation = Button(self.frame_details, text='Dodaj rezerwację', command=self.add_reservation)
         self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację', command=self.remove_reservation)
         self.button_update_reservation = Button(self.frame_details, text='Edytuj rezerwację', command=self.update_reservation)
+        self.button_show_reservations = Button(self.frame_details, text='Pokaż rezerwacje', command=self.show_reservations)
 
         self.label_details.grid(row=0, column=0, columnspan=4, pady=5)
         self.label_name.grid(row=1, column=0, sticky=W)
-        self.entry_name.grid(row=1, column=1, sticky=W, columnspan=3, pady=5)
+        self.entry_name.grid(row=1, column=1, columnspan=3, pady=5)
         self.label_clients.grid(row=2, column=0, sticky=W, pady=5)
-        self.label_employees.grid(row=2, column=2, sticky=W, pady=5)
         self.listbox_clients.grid(row=3, column=0, columnspan=2, pady=5)
+        self.label_employees.grid(row=2, column=2, sticky=W, pady=5)
         self.listbox_employees.grid(row=3, column=2, columnspan=2, pady=5)
 
         self.entry_client_name.grid(row=4, column=0, columnspan=2, pady=5)
-        self.entry_employee_name.grid(row=4, column=2, columnspan=2, sticky=E, pady=5)
-        self.entry_reservation_name.grid(row=6, column=0, columnspan=4, pady=5)
+        self.entry_employee_name.grid(row=4, column=2, columnspan=2, pady=5)
 
         self.button_add_client.grid(row=5, column=0, pady=5)
         self.button_remove_client.grid(row=5, column=1, pady=5)
-        self.button_update_client.grid(row=6, column=0, columnspan=2, pady=5)
+        self.button_update_client.grid(row=6, column=0, pady=5)
 
         self.button_add_employee.grid(row=5, column=2, pady=5)
         self.button_remove_employee.grid(row=5, column=3, pady=5)
-        self.button_update_employee.grid(row=6, column=2, columnspan=2, pady=5)
+        self.button_update_employee.grid(row=6, column=2, pady=5)
 
-        self.button_add_reservation.grid(row=7, column=0, pady=5)
-        self.button_show_reservations.grid(row=7, column=1, pady=5)  # Moved next to 'Dodaj rezerwację'
-        self.button_remove_reservation.grid(row=7, column=2, pady=5)
-        self.button_update_reservation.grid(row=7, column=3, pady=5)
+        self.entry_reservation_name.grid(row=7, column=0, columnspan=2, pady=5)
+        self.button_add_reservation.grid(row=8, column=0, pady=5)
+        self.button_remove_reservation.grid(row=8, column=1, pady=5)
+        self.button_show_reservations.grid(row=8, column=2, pady=5)
+        self.button_update_reservation.grid(row=8, column=3, pady=5)
 
     def setup_map_frame(self):
         self.label_map = Label(self.frame_map, text='Mapa')
         self.label_map.grid(row=0, column=0, pady=5)
-        self.map_widget = tkintermapview.TkinterMapView(self.frame_map, width=1100, height=400, corner_radius=0)
+        self.map_widget = tkintermapview.TkinterMapView(self.frame_map, width=800, height=800, corner_radius=0)
         self.map_widget.grid(row=1, column=0, pady=5)
         self.map_widget.set_position(52.229675, 21.012230)
         self.map_widget.set_zoom(6)
@@ -195,6 +197,7 @@ class CentreManager:
             self.selected_client['reservation'].append(reservation_name)
             self.entry_reservation_name.delete(0, END)
             self.show_reservations()
+            self.ensure_client_in_centre(reservation_name)
 
     def remove_reservation(self):
         reservation_name = self.entry_reservation_name.get()
@@ -202,6 +205,7 @@ class CentreManager:
             self.selected_client['reservation'].remove(reservation_name)
             self.entry_reservation_name.delete(0, END)
             self.show_reservations()
+            self.ensure_client_not_in_centre(reservation_name)
 
     def update_reservation(self):
         reservation_name = self.entry_reservation_name.get()
@@ -210,6 +214,18 @@ class CentreManager:
             self.selected_client['reservation'][selected_index[0]] = reservation_name
             self.entry_reservation_name.delete(0, END)
             self.show_reservations()
+            self.ensure_client_in_centre(reservation_name)
+
+    def ensure_client_in_centre(self, centre_name):
+        centre = next((c for c in self.centres if c['name'] == centre_name), None)
+        if centre and self.selected_client and self.selected_client not in centre['clients']:
+            centre['clients'].append(self.selected_client)
+
+    def ensure_client_not_in_centre(self, centre_name):
+        centre = next((c for c in self.centres if c['name'] == centre_name), None)
+        if centre and self.selected_client:
+            if not any(res == centre_name for client in centre['clients'] for res in client['reservation']):
+                centre['clients'] = [client for client in centre['clients'] if client != self.selected_client]
 
     def add_employee(self):
         employee_name = self.entry_employee_name.get()
