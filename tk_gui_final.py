@@ -325,13 +325,12 @@ class CentreManager:
 
 def main():
     root = Tk()
-    login_window = LoginWindow(root, lambda: on_login_success(root))
-    root.mainloop()
 
-def on_login_success(root):
-    root.destroy()
-    root = Tk()
-    app = CentreManager(root)
+    def on_login_success():
+        login_window.frame_login.pack_forget()
+        CentreManager(root)
+
+    login_window = LoginWindow(root, on_login_success)
     root.mainloop()
 
 if __name__ == "__main__":

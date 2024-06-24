@@ -227,6 +227,19 @@ class CentreManager:
                 marker = self.map_widget.set_marker(lat, lon, text=centre["name"])
                 self.markers[centre["name"]] = marker
 
+    def update_map_markers(self):
+        for markers in self.markers.values():
+            markers.delete()
+        self.markers.clear()
+
+        if self.selected_centre:
+            coordinates = self.get_coordinates_from_wikipedia(self.selected_centre['name'])
+            if coordinates:
+                lat, lon = coordinates
+                marker_text = self.selected_centre["name"]
+                marker = self.map_widget.set_marker(lat, lon, text=marker_text)
+                self.markers[self.selected_centre["name"]] = marker
+
     def show_centre_details(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
@@ -250,6 +263,7 @@ class CentreManager:
 
             # Show single centre marker
             self.display_single_marker(self.selected_centre["location"])
+            self.update_map_markers()
 
     def display_single_marker(self, location):
         self.map_widget.set_position(52.237049, 21.017532)  # Default position over Poland
@@ -399,34 +413,20 @@ class CentreManager:
                 self.listbox_employees.delete(index)
                 self.listbox_employees.insert(index, name)
 
-    # def display_client_reservations(self):
-    #     selected_client_index = self.listbox_clients.curselection()
-    #     if selected_client_index:
-    #         selected_client_index = selected_client_index[0]
-    #         client = self.selected_centre["clients"][selected_client_index]
-    #         reservations = client["reservation"]
-    #         # Usuń istniejące markery (jeśli są)
-    #         for marker in self.markers.values():
-    #             self.map_widget.remove_marker(marker)
-    #         self.markers.clear()
-    #         # Dodaj markery dla każdej rezerwacji
-    #         for reservation in reservations:
-    #             lat = reservation.get("latitude")
-    #             lon = reservation.get("longitude")
-    #             if lat and lon:
-    #                 marker = self.map_widget.set_marker(float(lat), float(lon), text=reservation["name"])
-    #                 self.markers[reservation["name"]] = marker
-    #
-    # def get_coordinates_from_wikipedia(self, location):
-    #     url = f"https://pl.wikipedia.org/wiki/{location}"
-    #     response = requests.get(url)
-    #     soup = BeautifulSoup(response.content, "html.parser")
-    #     coordinates = soup.find("span", {"class": "geo"})
-    #     if coordinates:
-    #         lat, lon = coordinates.text.split("; ")
-    #         return lat.strip(), lon.strip()
-    #     return None
-
+    def get_coordinates_from_wikipedia(self, location):
+        try:
+            url = f"https://pl.wikipedia.org/wiki/{location}"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, "html.parser")
+            coordinates = soup.find("span", {"class": "geo"})
+            if coordinates:
+                latitude = float(coordinates[0]['lat'])
+                longtitude = float(coordinates[0]['lon'])
+                return latitude, longtitude
+            return None
+        except Exception as e:
+            print('Błąd podczas pobierania kordynatów:', e)
+            return None
 
 def main():
     root = Tk()
