@@ -13,7 +13,7 @@ dane_logowania = {
 
         # klasa LoginWindow odpowiada za logowanie do aplikacji
 class LoginWindow:
-    def __init__(self, root, on_login_success):
+    def __init__(self, root, on_login_success):    # definiowanie klasy
         self.root = root
         self.root.title("Login")
         self.on_login_success = on_login_success
@@ -47,13 +47,13 @@ class LoginWindow:
 
         # klasa CentreManager odpowiada za aplikację
 class CentreManager:
-    def __init__(self, root):
+    def __init__(self, root):                    # definiowanie klasy
         self.root = root
         self.root.state('zoomed')  # Aplikacja włącza się w pełnym ekranie
         self.root.title("Centre Manager")
 
         self.centres = centres
-        self.geolocator = Nominatim(user_agent="centre_manager")
+        self.geolocator = Nominatim(user_agent="centre_manager")   # Nominatim to klasa biblioteki geopy, user_agent to wymagany parametr do uzywania tej aplikacji
 
         # Frames
         self.frame_list = Frame(root, width=300, height=800, padx=10, pady=10)
@@ -208,8 +208,8 @@ class CentreManager:
         self.map_widget.set_position(52.2297, 19.0122)     # centrowanie mapy na centrum Polski
         self.map_widget.delete_all_marker()
 
-        location = self.geolocator.geocode(self.selected_centre['location'])
-        if location:
+        location = self.geolocator.geocode(self.selected_centre['location'])   # używanie jednej z metod Nominatim 'geocode'
+        if location:                                                           # do przekształcenia lokalizacji na współrzędne, które są potem ustawiane na mapie
             self.map_widget.set_position(location.latitude, location.longitude)
             self.map_widget.set_marker(location.latitude, location.longitude, text=self.selected_centre['name'])
 
@@ -235,7 +235,7 @@ class CentreManager:
         if name and location:
             self.centres.append({"name": name, "location": location, "clients": [], "employees": []})
             self.refresh_centre_list()
-
+            self.show_all_centres_on_map()
 
         # usunięcie centrum z listy centrów
     def remove_centre(self):
@@ -243,6 +243,7 @@ class CentreManager:
         if selected_index:
             self.centres.pop(selected_index[0])
             self.refresh_centre_list()
+            self.show_all_centres_on_map()
 
 
         # aktualizacja danych dla wybranego centrum
@@ -253,6 +254,7 @@ class CentreManager:
                                                "clients": self.selected_centre['clients'],
                                                "employees": self.selected_centre['employees']}
             self.refresh_centre_list()
+            self.show_all_centres_on_map()
 
 
         # dodanie klienta do listy klientów
@@ -374,11 +376,12 @@ class CentreManager:
 
         # pokazanie markerów wszystkich centrów na mapie
     def show_all_centres_on_map(self):
+        self.map_widget.delete_all_marker()
         self.map_widget.set_position(52.2296756, 19.0122287)
         self.map_widget.set_zoom(6)
         for centre in self.centres:
-            location = self.geolocator.geocode(centre['location'])
-            if location:
+            location = self.geolocator.geocode(centre['location']) # używanie jednej z metod Nominatim 'geocode'
+            if location:                                           # do przekształcenia lokalizacji na współrzędne, które są potem ustawiane na mapie
                 self.map_widget.set_marker(location.latitude, location.longitude, text=centre['name'])
                 self.clear_details()
 
@@ -392,8 +395,8 @@ class CentreManager:
             for reservation in self.selected_client['reservation']:
                 for centre in self.centres:
                     if centre['name'] == reservation:
-                        location = self.geolocator.geocode(centre['location'])
-                        if location:
+                        location = self.geolocator.geocode(centre['location'])   # używanie jednej z metod Nominatim 'geocode'
+                        if location:                                             # do przekształcenia lokalizacji na współrzędne, które są potem ustawiane na mapie
                             self.map_widget.set_marker(location.latitude, location.longitude, text=reservation)
                         break
 
@@ -408,7 +411,7 @@ def main():
         CentreManager(root)                         # utworzenie głównego okna aplikacji poprzez przywołanie 'root'
 
     login_window = LoginWindow(root, on_login_success)  # utworzenie okna logowania, 'on_login_succes' używane dopiero po poprawnym zalogowaniu
-    root.mainloop()                                 # uruchomienie głównej pętli Tkinter, czyli utrzymanie aplikacjiw aktywnym stanie, aby odpowiadała na polecenia
+    root.mainloop()                                 # uruchomienie głównej pętli Tkinter, czyli utrzymanie aplikacji w aktywnym stanie, aby odpowiadała na polecenia
 
         # sprawdzenie czy kod jest uruchamiany bezpośrednio, jeśli tak - wywołuje main(), co włącza aplikację
 if __name__ == '__main__':
