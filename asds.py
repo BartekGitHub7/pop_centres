@@ -44,3 +44,14 @@ class LoginWindow:
         else:
             self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')
             self.label_error.grid(row=3, columnspan=2, pady=5)
+
+
+    def show_selected_centre_on_map(self):
+        self.map_widget.set_zoom(6)  # Center map on Poland with zoom 6
+        self.map_widget.set_position(52.2297, 21.0122)
+        self.map_widget.delete_all_marker()
+
+        location = self.geolocator.geocode(self.selected_centre['location'])
+        if location:
+            self.map_widget.set_position(location.latitude, location.longitude)
+            self.map_widget.set_marker(location.latitude, location.longitude, text=self.selected_centre['name'])

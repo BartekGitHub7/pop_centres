@@ -1,42 +1,32 @@
-import tkinter as tk
 from tkinter import *
 import tkintermapview
-from bs4 import BeautifulSoup
-import requests
+from geopy.geocoders import Nominatim
 
-
-# Simple hardcoded user credentials
 USER_CREDENTIALS = {
     "admin": "2137"
 }
 
 centres = [
     {"name": "Centrum Konferencyjne w Warszawie", "location": "Warszawa", "clients": [{"name": "Mariusz Pudzianowski",
-                                                                                       "reservation": [
-                                                                                           "Centrum Konferencyjne w Warszawie",
-                                                                                           "Centrum Konferencyjne w Poznaniu"]},
-                                                                                      {"name": "Władysław Łokietek",
-                                                                                       "reservation": [
-                                                                                           "Centrum Konferencyjne w Warszawie",
-                                                                                           "Centrum Konferencyjne w Gdańsku"]}],
+                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                               "Centrum Konferencyjne w Poznaniu"]},
+                                                              {"name": "Władysław Łokietek",
+                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                               "Centrum Konferencyjne w Gdańsku"]}],
      "employees": [{"name": "Anna Nowak"}, {"name": "Piotr Kowalski"}]},
     {"name": "Centrum Konferencyjne w Poznaniu", "location": "Poznań", "clients": [{"name": "Mariusz Pudzianowski",
-                                                                                    "reservation": [
-                                                                                        "Centrum Konferencyjne w Warszawie",
-                                                                                        "Centrum Konferencyjne w Poznaniu"]},
-                                                                                   {"name": "Adam Nowak",
-                                                                                    "reservation": [
-                                                                                        "Centrum Konferencyjne w Poznaniu",
-                                                                                        "Centrum Konferencyjne w Krakowie"]}],
+                                                              "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                              "Centrum Konferencyjne w Poznaniu"]},
+                                                             {"name": "Adam Nowak",
+                                                              "reservation": ["Centrum Konferencyjne w Poznaniu",
+                                                                              "Centrum Konferencyjne w Krakowie"]}],
      "employees": [{"name": "Klaudia Mickiewicz"}, {"name": "Krzysztof Wiśniewski"}]},
     {"name": "Centrum Konferencyjne w Gdańsku", "location": "Gdańsk", "clients": [{"name": "Jan Kowalski",
-                                                                                   "reservation": [
-                                                                                       "Centrum Konferencyjne w Lublinie",
-                                                                                       "Centrum Konferencyjne w Gdańsku"]},
-                                                                                  {"name": "Władysław Łokietek",
-                                                                                   "reservation": [
-                                                                                       "Centrum Konferencyjne w Warszawie",
-                                                                                       "Centrum Konferencyjne w Gdańsku"]}],
+                                                             "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                             "Centrum Konferencyjne w Gdańsku"]},
+                                                            {"name": "Władysław Łokietek",
+                                                             "reservation": ["Centrum Konferencyjne w Warszawie",
+                                                                             "Centrum Konferencyjne w Gdańsku"]}],
      "employees": [{"name": "Marta Kwiatkowska"}, {"name": "Tomasz Jankowski"}]},
     {"name": "Centrum Konferencyjne w Krakowie", "location": "Kraków", "clients": [
         {"name": "Adam Nowak", "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Poznaniu"]},
@@ -44,16 +34,13 @@ centres = [
          "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Lublinie"]}],
      "employees": [{"name": "Julia Wiśniewska"}, {"name": "Michał Kamiński"}]},
     {"name": "Centrum Konferencyjne w Lublinie", "location": "Lublin", "clients": [{"name": "Jan Kowalski",
-                                                                                    "reservation": [
-                                                                                        "Centrum Konferencyjne w Lublinie",
-                                                                                        "Centrum Konferencyjne w Gdańsku"]},
-                                                                                   {"name": "Ferdynand Kiepski",
-                                                                                    "reservation": [
-                                                                                        "Centrum Konferencyjne w Lublinie",
-                                                                                        "Centrum Konferencyjne w Krakowie"]}],
+                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                              "Centrum Konferencyjne w Gdańsku"]},
+                                                             {"name": "Ferdynand Kiepski",
+                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
+                                                                              "Centrum Konferencyjne w Krakowie"]}],
      "employees": [{"name": "Agnieszka Wojciechowska"}, {"name": "Adam Woźniak"}]},
 ]
-
 
 class LoginWindow:
     def __init__(self, root, on_login_success):
@@ -86,7 +73,6 @@ class LoginWindow:
             self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')
             self.label_error.grid(row=3, columnspan=2, pady=5)
 
-
 class CentreManager:
     def __init__(self, root):
         self.root = root
@@ -94,7 +80,7 @@ class CentreManager:
         self.root.title("Centre Manager")
 
         self.centres = centres
-        self.markers = {}
+        self.geolocator = Nominatim(user_agent="centre_manager")
 
         # Frames
         self.frame_list = Frame(root, width=300, height=800, padx=10, pady=10)
@@ -116,317 +102,275 @@ class CentreManager:
         self.selected_centre = None
         self.selected_client = None
 
-        # Display all centre markers at startup
-        self.display_all_markers()
+        self.show_all_centres_on_map()
 
     def setup_list_frame(self):
         self.label_list = Label(self.frame_list, text='Lista Centrów Konferencyjnych')
         self.listbox_centres = Listbox(self.frame_list, width=40, height=25)
         self.button_show_details = Button(self.frame_list, text='Pokaż szczegóły', command=self.show_centre_details)
+        self.button_show_reservations = Button(self.frame_list, text='Pokaż rezerwacje',
+                                               command=self.show_reservation_centres)
         self.button_add_centre = Button(self.frame_list, text='Dodaj centrum', command=self.add_centre)
         self.button_remove_centre = Button(self.frame_list, text='Usuń centrum', command=self.remove_centre)
         self.button_update_centre = Button(self.frame_list, text='Edytuj centrum', command=self.update_centre)
+        self.button_show_all_centres = Button(self.frame_list, text='Pokaż wszystkie centra', command=self.show_all_centres_on_map)
 
         self.label_list.pack(pady=5)
         self.listbox_centres.pack(pady=5)
+        self.button_show_all_centres.pack(pady=5)
         self.button_show_details.pack(side=LEFT, padx=5)
+        self.button_show_reservations.pack(side=LEFT, padx=5)
         self.button_add_centre.pack(side=LEFT, padx=5)
         self.button_remove_centre.pack(side=LEFT, padx=5)
         self.button_update_centre.pack(side=LEFT, padx=5)
+
 
         self.refresh_centre_list()
 
     def setup_details_frame(self):
         self.label_details = Label(self.frame_details, text='Szczegóły centrum')
         self.label_name = Label(self.frame_details, text='Nazwa centrum')
-        self.entry_name = Entry(self.frame_details, width=50)
-        self.label_location = Label(self.frame_details, text='Lokalizacja centrum')
-        self.entry_location = Entry(self.frame_details, width=50)
+        self.entry_name = Entry(self.frame_details, width=40)
+        self.label_location = Label(self.frame_details, text='Miejscowość')
+        self.entry_location = Entry(self.frame_details, width=40)
         self.label_clients = Label(self.frame_details, text='Klienci')
         self.listbox_clients = Listbox(self.frame_details, width=30, height=10)
         self.label_employees = Label(self.frame_details, text='Pracownicy')
         self.listbox_employees = Listbox(self.frame_details, width=30, height=10)
-        self.label_reservation = Label(self.frame_details, text='Rezerwacje')
-        self.listbox_reservation = Listbox(self.frame_details, width=30, height=10)
+        self.label_reservations = Label(self.frame_details, text='Rezerwacje')
+        self.listbox_reservations = Listbox(self.frame_details, width=35, height=10)
 
         self.entry_client_name = Entry(self.frame_details, width=30)
         self.entry_employee_name = Entry(self.frame_details, width=30)
-        self.entry_reservation_name = Entry(self.frame_details, width=30)
+        self.entry_reservation_name = Entry(self.frame_details, width=35)
 
         self.button_add_client = Button(self.frame_details, text='Dodaj klienta', command=self.add_client)
-        self.button_remove_client = Button(self.frame_details, text='    Usuń klienta    ', command=self.remove_client)
-        self.button_update_client = Button(self.frame_details, text='Edytuj klienta', command=self.update_client)
-        self.button_add_employee = Button(self.frame_details, text='Dodaj prac.', command=self.add_employee)
-        self.button_remove_employee = Button(self.frame_details, text='Usuń prac.',
-                                             command=self.remove_employee)
-        self.button_update_employee = Button(self.frame_details, text='Edytuj pracownika',
-                                             command=self.update_employee)
+        self.button_remove_client = Button(self.frame_details, text='Usuń klienta', command=self.remove_client)
+        self.button_edit_client = Button(self.frame_details, text='Edytuj klienta', command=self.edit_client)
+        self.button_add_employee = Button(self.frame_details, text='Dodaj pracownika', command=self.add_employee)
+        self.button_remove_employee = Button(self.frame_details, text='Usuń pracownika', command=self.remove_employee)
+        self.button_edit_employee = Button(self.frame_details, text='Edytuj pracownika', command=self.edit_employee)
         self.button_add_reservation = Button(self.frame_details, text='Dodaj rezerwację', command=self.add_reservation)
-        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację',
-                                                command=self.remove_reservation)
-        self.button_update_reservation = Button(self.frame_details, text='Edytuj rezerwację',
-                                                command=self.update_reservation)
-        self.button_show_reservations = Button(self.frame_details, text='Pokaż rezerwacje',
-                                               command=self.show_reservations)
+        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację', command=self.remove_reservation)
+        self.button_edit_reservation = Button(self.frame_details, text='Edytuj rezerwację', command=self.edit_reservation)
 
 
 
-        self.label_details.grid(row=0, column=0, pady=5)
-        self.label_name.grid(row=1, column=0, pady=5)
-        self.entry_name.grid(row=1, column=1, pady=5)
-        self.label_location.grid(row=2, column=0, pady=5)
-        self.entry_location.grid(row=2, column=1, pady=5)
+        self.label_details.grid(row=0, columnspan=2, pady=10)
+        self.label_name.grid(row=1, column=0, sticky=W)
+        self.entry_name.grid(row=1, column=1, columnspan=1, pady=5, sticky=W)
+        self.label_location.grid(row=2, column=0, sticky=W)
+        self.entry_location.grid(row=2, column=1, columnspan=1, pady=5, sticky=W)
         self.label_clients.grid(row=3, column=0, pady=5)
-        self.listbox_clients.grid(row=5, column=0, pady=5)
+        self.listbox_clients.grid(row=4, column=0, pady=5)
         self.label_employees.grid(row=3, column=1, pady=5)
-        self.listbox_employees.grid(row=5, column=1, pady=5)
-        self.label_reservation.grid(row=10, column=0, pady=5)
-        self.listbox_reservation.grid(row=11, column=0, pady=5)
+        self.listbox_employees.grid(row=4, column=1, pady=5)
+        self.label_reservations.grid(row=9, column=0, pady=5)
+        self.listbox_reservations.grid(row=10, column=0, pady=5)
 
-        self.entry_client_name.grid(row=6, column=0, pady=5)
-        self.entry_employee_name.grid(row=6, column=1, pady=5)
-        self.entry_reservation_name.grid(row=12, column=0, pady=5)
+        self.entry_client_name.grid(row=5, column=0, pady=5)
+        self.entry_employee_name.grid(row=5, column=1, pady=5)
+        self.entry_reservation_name.grid(row=11, column=0, pady=5)
 
-        self.button_add_client.grid(row=7, column=0, pady=5, sticky=W)
+        self.button_add_client.grid(row=6, column=0, pady=5)
         self.button_remove_client.grid(row=7, column=0, pady=5)
-        self.button_update_client.grid(row=8, column=0, pady=5, sticky=W)
-        self.button_add_employee.grid(row=7, column=1, pady=5)
-        self.button_remove_employee.grid(row=7, column=1, pady=5, sticky=E)
-        self.button_update_employee.grid(row=8, column=1, pady=5)
-        self.button_add_reservation.grid(row=13, column=0, pady=5, padx=5, sticky=W)
-        self.button_remove_reservation.grid(row=13, column=0, pady=5, padx=5, sticky=E)
-        self.button_update_reservation.grid(row=14, column=0, pady=5)
-        self.button_show_reservations.grid(row=8, column=0, pady=5, sticky=E)
+        self.button_edit_client.grid(row=8, column=0, pady=5)
+        self.button_add_employee.grid(row=6, column=1, pady=5)
+        self.button_remove_employee.grid(row=7, column=1, pady=5)
+        self.button_edit_employee.grid(row=8, column=1, pady=5)
+        self.button_add_reservation.grid(row=12, column=0, pady=5, sticky=W)
+        self.button_remove_reservation.grid(row=12, column=0, pady=5, sticky=E)
+        self.button_edit_reservation.grid(row=13, column=0, pady=5)
+
 
 
     def setup_map_frame(self):
-        self.map_widget = tkintermapview.TkinterMapView(self.frame_map, width=800, height=600, corner_radius=0)
-        self.map_widget.grid(row=0, column=0, padx=10, pady=10, sticky=N + S + E + W)
+        self.map_widget = tkintermapview.TkinterMapView(self.frame_map, width=800, height=800, corner_radius=0)
+        self.map_widget.pack(fill=BOTH, expand=True)
 
     def refresh_centre_list(self):
         self.listbox_centres.delete(0, END)
         for centre in self.centres:
-            self.listbox_centres.insert(END, centre["name"])
-
-    def display_all_markers(self):
-        self.map_widget.set_position(52.237049, 21.017532)  # Default position over Poland
-        self.map_widget.set_zoom(6)
-
-        locations = {
-            "Warszawa": (52.237049, 21.017532),
-            "Poznań": (52.406374, 16.9251681),
-            "Gdańsk": (54.3520252, 18.6466384),
-            "Kraków": (50.0646501, 19.9449799),
-            "Lublin": (51.2464536, 22.5684463),
-        }
-
-        for centre in self.centres:
-            location = centre["location"]
-            if location in locations:
-                lat, lon = locations[location]
-                marker = self.map_widget.set_marker(lat, lon, text=centre["name"])
-                self.markers[centre["name"]] = marker
-
-    def update_map_markers(self):
-        for markers in self.markers.values():
-            markers.delete()
-        self.markers.clear()
-
-        if self.selected_centre:
-            coordinates = self.get_coordinates_from_wikipedia(self.selected_centre['name'])
-            if coordinates:
-                lat, lon = coordinates
-                marker_text = self.selected_centre["name"]
-                marker = self.map_widget.set_marker(lat, lon, text=marker_text)
-                self.markers[self.selected_centre["name"]] = marker
+            self.listbox_centres.insert(END, centre['name'])
 
     def show_centre_details(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
-            index = selected_index[0]
-            self.selected_centre = self.centres[index]
-
+            centre = self.centres[selected_index[0]]
             self.entry_name.delete(0, END)
-            self.entry_name.insert(0, self.selected_centre["name"])
+            self.entry_name.insert(0, centre['name'])
             self.entry_location.delete(0, END)
-            self.entry_location.insert(0, self.selected_centre["location"])
-
+            self.entry_location.insert(0, centre['location'])
             self.listbox_clients.delete(0, END)
-            for client in self.selected_centre["clients"]:
-                self.listbox_clients.insert(END, client["name"])
-
+            for client in centre['clients']:
+                self.listbox_clients.insert(END, client['name'])
             self.listbox_employees.delete(0, END)
-            for employee in self.selected_centre["employees"]:
-                self.listbox_employees.insert(END, employee["name"])
+            for employee in centre['employees']:
+                self.listbox_employees.insert(END, employee['name'])
+            self.selected_centre = centre
 
-            self.listbox_reservation.delete(0, END)
+            self.show_selected_centre_on_map()
 
-            # Show single centre marker
-            self.display_single_marker(self.selected_centre["location"])
-            self.update_map_markers()
-
-    def display_single_marker(self, location):
-        self.map_widget.set_position(52.237049, 21.017532)  # Default position over Poland
-        self.map_widget.set_zoom(6)
-
-        locations = {
-            "Warszawa": (52.237049, 21.017532),
-            "Poznań": (52.406374, 16.9251681),
-            "Gdańsk": (54.3520252, 18.6466384),
-            "Kraków": (50.0646501, 19.9449799),
-            "Lublin": (51.2464536, 22.5684463),
-        }
-
-        # Clear all existing markers
+    def show_selected_centre_on_map(self):
+        self.map_widget.set_zoom(6)  # Center map on Poland with zoom 6
+        self.map_widget.set_position(52.2297, 19.0122)
         self.map_widget.delete_all_marker()
 
-        if location in locations:
-            lat, lon = locations[location]
-            self.map_widget.set_marker(lat, lon, text=location)
-            self.map_widget.set_position(lat, lon)
-            self.map_widget.set_zoom(10)
+        location = self.geolocator.geocode(self.selected_centre['location'])
+        if location:
+            self.map_widget.set_position(location.latitude, location.longitude)
+            self.map_widget.set_marker(location.latitude, location.longitude, text=self.selected_centre['name'])
+
+    def show_reservation_centres(self):
+        selected_client_index = self.listbox_clients.curselection()
+        if selected_client_index:
+            selected_client_name = self.listbox_clients.get(selected_client_index)
+            self.listbox_reservations.delete(0, END)
+            for client in self.selected_centre['clients']:
+                if client['name'] == selected_client_name:
+                    self.selected_client = client
+                    for reservation in client['reservation']:
+                        self.listbox_reservations.insert(END, reservation)
+                    break
+            self.show_client_reservations_on_map()
 
     def add_centre(self):
         name = self.entry_name.get()
         location = self.entry_location.get()
         if name and location:
-            new_centre = {"name": name, "location": location, "clients": [], "employees": []}
-            self.centres.append(new_centre)
+            self.centres.append({"name": name, "location": location, "clients": [], "employees": []})
             self.refresh_centre_list()
 
     def remove_centre(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
-            index = selected_index[0]
-            del self.centres[index]
+            self.centres.pop(selected_index[0])
             self.refresh_centre_list()
 
     def update_centre(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
-            index = selected_index[0]
-            name = self.entry_name.get()
-            location = self.entry_location.get()
-            if name and location:
-                self.centres[index]["name"] = name
-                self.centres[index]["location"] = location
-                self.refresh_centre_list()
+            self.centres[selected_index[0]] = {"name": self.entry_name.get(), "location": self.entry_location.get(),
+                                               "clients": self.selected_centre['clients'],
+                                               "employees": self.selected_centre['employees']}
+            self.refresh_centre_list()
 
     def add_client(self):
-        name = self.entry_client_name.get()
-        if name and self.selected_centre:
-            new_client = {"name": name, "reservation": []}
-            self.selected_centre["clients"].append(new_client)
-            self.listbox_clients.insert(END, name)
+        if not self.selected_centre:
+            return
+        client_name = self.entry_client_name.get()
+        if client_name:
+            self.selected_centre['clients'].append({"name": client_name, "reservation": []})
+            self.listbox_clients.insert(END, client_name)
+            self.show_centre_details()
+            self.entry_client_name.delete(0, END)
 
     def remove_client(self):
         selected_index = self.listbox_clients.curselection()
-        if selected_index and self.selected_centre:
-            index = selected_index[0]
-            del self.selected_centre["clients"][index]
-            self.listbox_clients.delete(index)
+        if not selected_index:
+            return
+        del self.selected_centre['clients'][selected_index[0]]
+        self.listbox_clients.delete(selected_index[0])
+        self.show_centre_details()
 
-    def update_client(self):
+    def edit_client(self):
         selected_index = self.listbox_clients.curselection()
-        if selected_index and self.selected_centre:
-            index = selected_index[0]
-            name = self.entry_client_name.get()
-            if name:
-                self.selected_centre["clients"][index]["name"] = name
-                self.listbox_clients.delete(index)
-                self.listbox_clients.insert(index, name)
+        if not selected_index:
+            return
+        new_name = self.entry_client_name.get()
+        if new_name:
+            self.selected_centre['clients'][selected_index[0]]['name'] = new_name
+            self.listbox_clients.delete(selected_index[0])
+            self.listbox_clients.insert(selected_index[0], new_name)
+            self.entry_client_name.delete(0, END)
 
-
-
-    def show_reservations(self):
-        selected_client_index = self.listbox_clients.curselection()
-        if selected_client_index and self.selected_centre:
-            client_index = selected_client_index[0]
-            self.selected_client = self.selected_centre["clients"][client_index]
-
-            self.listbox_reservation.delete(0, END)
-            for reservation in self.selected_client["reservation"]:
-                self.listbox_reservation.insert(END, reservation)
-
-    def add_reservation(self):
-        if self.selected_centre:
-            selected = self.listbox_clients.curselection()
-            if selected:
-                client_name = self.listbox_clients.get(selected)
-                for client in self.selected_centre["clients"]:
-                    if client["name"] == client_name:
-                        reservation_name = self.entry_reservation_name.get()
-                        if reservation_name:
-                            client["reservation"].append(reservation_name)
-                        break
-                self.show_centre_details()
-
-    def remove_reservation(self):
-        if self.selected_centre:
-            selected = self.listbox_clients.curselection()
-            if selected:
-                client_name = self.listbox_clients.get(selected)
-                for client in self.selected_centre["clients"]:
-                    if client["name"] == client_name:
-                        reservation_name = self.entry_reservation_name.get()
-                        if reservation_name in client["reservation"]:
-                            client["reservation"].remove(reservation_name)
-                        break
-                self.show_centre_details()
-
-    def update_reservation(self):
-        if self.selected_centre:
-            selected = self.listbox_clients.curselection()
-            if selected:
-                client_name = self.listbox_clients.get(selected)
-                for client in self.selected_centre["clients"]:
-                    if client["name"] == client_name:
-                        old_reservation_name = self.entry_reservation_name.get()
-                        new_reservation_name = self.entry_reservation_name.get()
-                        if old_reservation_name in client["reservation"]:
-                            client["reservation"][
-                                client["reservation"].index(old_reservation_name)] = new_reservation_name
-                        break
-                self.show_centre_details()
 
     def add_employee(self):
-        name = self.entry_employee_name.get()
-        if name and self.selected_centre:
-            new_employee = {"name": name}
-            self.selected_centre["employees"].append(new_employee)
-            self.listbox_employees.insert(END, name)
+        if not self.selected_centre:
+            return
+        employee_name = self.entry_employee_name.get()
+        if employee_name:
+            self.selected_centre['employees'].append({"name": employee_name})
+            self.listbox_employees.insert(END, employee_name)
+            self.show_centre_details()
+            self.entry_employee_name.delete(0, END)
 
     def remove_employee(self):
         selected_index = self.listbox_employees.curselection()
-        if selected_index and self.selected_centre:
-            index = selected_index[0]
-            del self.selected_centre["employees"][index]
-            self.listbox_employees.delete(index)
+        if not selected_index:
+            return
+        del self.selected_centre['employees'][selected_index[0]]
+        self.listbox_employees.delete(selected_index[0])
+        self.show_centre_details()
 
-    def update_employee(self):
+    def edit_employee(self):
         selected_index = self.listbox_employees.curselection()
-        if selected_index and self.selected_centre:
-            index = selected_index[0]
-            name = self.entry_employee_name.get()
-            if name:
-                self.selected_centre["employees"][index]["name"] = name
-                self.listbox_employees.delete(index)
-                self.listbox_employees.insert(index, name)
+        if not selected_index:
+            return
+        new_name = self.entry_employee_name.get()
+        if new_name:
+            self.selected_centre['employees'][selected_index[0]]['name'] = new_name
+            self.listbox_employees.delete(selected_index[0])
+            self.listbox_employees.insert(selected_index[0], new_name)
+            self.entry_employee_name.delete(0, END)
 
-    def get_coordinates_from_wikipedia(self, location):
-        try:
-            url = f"https://pl.wikipedia.org/wiki/{location}"
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, "html.parser")
-            coordinates = soup.find("span", {"class": "geo"})
-            if coordinates:
-                latitude = float(coordinates[0]['lat'])
-                longtitude = float(coordinates[0]['lon'])
-                return latitude, longtitude
-            return None
-        except Exception as e:
-            print('Błąd podczas pobierania kordynatów:', e)
-            return None
+    def refresh_reservations_list(self):
+        self.listbox_reservations.delete(0, END)
+        if self.selected_client:
+            for reservation in self.selected_client["reservation"]:
+                self.listbox_reservations.insert(END, reservation)
+
+    def add_reservation(self):
+        reservation = self.entry_reservation_name.get()
+        if reservation and self.selected_client:
+            self.selected_client["reservation"].append(reservation)
+            self.refresh_reservations_list()
+            self.entry_reservation_name.delete(0, END)
+            self.show_client_reservations_on_map()
+
+    def remove_reservation(self):
+        selected_index = self.listbox_reservations.curselection()
+        if selected_index and self.selected_client:
+            del self.selected_client["reservation"][selected_index[0]]
+            self.refresh_reservations_list()
+            self.show_client_reservations_on_map()
+
+    def edit_reservation(self):
+        selected_index = self.listbox_reservations.curselection()
+        new_reservation = self.entry_reservation_name.get()
+        if selected_index and self.selected_client and new_reservation:
+            self.selected_client["reservation"][selected_index[0]] = new_reservation
+            self.refresh_reservations_list()
+            self.entry_reservation_name.delete(0, END)
+            self.show_client_reservations_on_map()
+    def clear_details(self):
+        self.entry_name.delete(0, END)
+        self.entry_location.delete(0, END)
+        self.listbox_clients.delete(0, END)
+        self.listbox_employees.delete(0, END)
+        self.listbox_reservations.delete(0, END)
+
+    def show_all_centres_on_map(self):
+        self.map_widget.set_position(52.2296756, 19.0122287)
+        self.map_widget.set_zoom(6)
+        for centre in self.centres:
+            location = self.geolocator.geocode(centre['location'])
+            if location:
+                self.map_widget.set_marker(location.latitude, location.longitude, text=centre['name'])
+
+    def show_client_reservations_on_map(self):
+        if self.selected_client:
+            self.map_widget.set_position(52.2296756, 19.0122287)
+            self.map_widget.set_zoom(6)
+            self.map_widget.delete_all_marker()
+            for reservation in self.selected_client['reservation']:
+                for centre in self.centres:
+                    if centre['name'] == reservation:
+                        location = self.geolocator.geocode(centre['location'])
+                        if location:
+                            self.map_widget.set_marker(location.latitude, location.longitude, text=reservation)
+                        break
+
 
 def main():
     root = Tk()
