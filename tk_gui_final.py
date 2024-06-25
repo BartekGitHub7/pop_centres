@@ -1,47 +1,13 @@
 from tkinter import *
 import tkintermapview
 from geopy.geocoders import Nominatim
+from centre_data import centres
 
-USER_CREDENTIALS = {
+dane_logowania = {
     "admin": "2137"
 }
 
-centres = [
-    {"name": "Centrum Konferencyjne w Warszawie", "location": "Warszawa", "clients": [{"name": "Mariusz Pudzianowski",
-                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
-                                                                               "Centrum Konferencyjne w Poznaniu"]},
-                                                              {"name": "Władysław Łokietek",
-                                                               "reservation": ["Centrum Konferencyjne w Warszawie",
-                                                                               "Centrum Konferencyjne w Gdańsku"]}],
-     "employees": [{"name": "Anna Nowak"}, {"name": "Piotr Kowalski"}]},
-    {"name": "Centrum Konferencyjne w Poznaniu", "location": "Poznań", "clients": [{"name": "Mariusz Pudzianowski",
-                                                              "reservation": ["Centrum Konferencyjne w Warszawie",
-                                                                              "Centrum Konferencyjne w Poznaniu"]},
-                                                             {"name": "Adam Nowak",
-                                                              "reservation": ["Centrum Konferencyjne w Poznaniu",
-                                                                              "Centrum Konferencyjne w Krakowie"]}],
-     "employees": [{"name": "Klaudia Mickiewicz"}, {"name": "Krzysztof Wiśniewski"}]},
-    {"name": "Centrum Konferencyjne w Gdańsku", "location": "Gdańsk", "clients": [{"name": "Jan Kowalski",
-                                                             "reservation": ["Centrum Konferencyjne w Lublinie",
-                                                                             "Centrum Konferencyjne w Gdańsku"]},
-                                                            {"name": "Władysław Łokietek",
-                                                             "reservation": ["Centrum Konferencyjne w Warszawie",
-                                                                             "Centrum Konferencyjne w Gdańsku"]}],
-     "employees": [{"name": "Marta Kwiatkowska"}, {"name": "Tomasz Jankowski"}]},
-    {"name": "Centrum Konferencyjne w Krakowie", "location": "Kraków", "clients": [
-        {"name": "Adam Nowak", "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Poznaniu"]},
-        {"name": "Ferdynand Kiepski",
-         "reservation": ["Centrum Konferencyjne w Krakowie", "Centrum Konferencyjne w Lublinie"]}],
-     "employees": [{"name": "Julia Wiśniewska"}, {"name": "Michał Kamiński"}]},
-    {"name": "Centrum Konferencyjne w Lublinie", "location": "Lublin", "clients": [{"name": "Jan Kowalski",
-                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
-                                                                              "Centrum Konferencyjne w Gdańsku"]},
-                                                             {"name": "Ferdynand Kiepski",
-                                                              "reservation": ["Centrum Konferencyjne w Lublinie",
-                                                                              "Centrum Konferencyjne w Krakowie"]}],
-     "employees": [{"name": "Agnieszka Wojciechowska"}, {"name": "Adam Woźniak"}]},
-]
-
+        # klasa LoginWindow odpowiada za logowanie do aplikacji
 class LoginWindow:
     def __init__(self, root, on_login_success):
         self.root = root
@@ -67,16 +33,19 @@ class LoginWindow:
     def login(self):
         username = self.entry_username.get()
         password = self.entry_password.get()
-        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+        if username in dane_logowania and dane_logowania[username] == password:
             self.on_login_success()
         else:
             self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')
             self.label_error.grid(row=3, columnspan=2, pady=5)
 
+
+
+        # klasa CentreManager odpowiada za aplikację
 class CentreManager:
     def __init__(self, root):
         self.root = root
-        self.root.state('zoomed')  # Fullscreen
+        self.root.state('zoomed')  # Aplikacja włącza się w pełnym ekranie
         self.root.title("Centre Manager")
 
         self.centres = centres
@@ -104,6 +73,11 @@ class CentreManager:
 
         self.show_all_centres_on_map()
 
+
+        # ustawienie listy centrów oraz przycisków do zarządzania nimi
+
+        # sekcja odpowiedzialna za to co one pokazują
+
     def setup_list_frame(self):
         self.label_list = Label(self.frame_list, text='Lista Centrów Konferencyjnych')
         self.listbox_centres = Listbox(self.frame_list, width=40, height=25)
@@ -124,14 +98,17 @@ class CentreManager:
         self.button_remove_centre.pack(side=LEFT, padx=5)
         self.button_update_centre.pack(side=LEFT, padx=5)
 
-
         self.refresh_centre_list()
 
+
+        # ustawienie szczegółów centrum (klienci, pracownicy, rezerwacje) i przycisków do nich
+
+            # sekcja odpowiedzialna za to co one pokazują
     def setup_details_frame(self):
-        self.label_details = Label(self.frame_details, text='Szczegóły centrum')
-        self.label_name = Label(self.frame_details, text='Nazwa centrum')
-        self.entry_name = Entry(self.frame_details, width=40)
-        self.label_location = Label(self.frame_details, text='Miejscowość')
+        self.label_details = Label(self.frame_details, text='Szczegóły centrum')    # np: ta linijka odpowiada za to jak nazywa się cała sekcja szczegółów
+        self.label_name = Label(self.frame_details, text='Nazwa centrum')           # np: ta linijka odpowiada za to jak nazywa się pole, w którym wyświetla się nazwa centrum
+        self.entry_name = Entry(self.frame_details, width=40)                       # tu wyświetla się nazwa centrum
+        self.label_location = Label(self.frame_details, text='Miejscowość')         # reszta analogicznie
         self.entry_location = Entry(self.frame_details, width=40)
         self.label_clients = Label(self.frame_details, text='Klienci')
         self.listbox_clients = Listbox(self.frame_details, width=30, height=10)
@@ -144,6 +121,8 @@ class CentreManager:
         self.entry_employee_name = Entry(self.frame_details, width=30)
         self.entry_reservation_name = Entry(self.frame_details, width=35)
 
+            # sekcja odpowiedzialna za to gdzie się znajdują
+
         self.button_add_client = Button(self.frame_details, text='Dodaj klienta', command=self.add_client)
         self.button_remove_client = Button(self.frame_details, text='Usuń klienta', command=self.remove_client)
         self.button_edit_client = Button(self.frame_details, text='Edytuj klienta', command=self.edit_client)
@@ -151,10 +130,12 @@ class CentreManager:
         self.button_remove_employee = Button(self.frame_details, text='Usuń pracownika', command=self.remove_employee)
         self.button_edit_employee = Button(self.frame_details, text='Edytuj pracownika', command=self.edit_employee)
         self.button_add_reservation = Button(self.frame_details, text='Dodaj rezerwację', command=self.add_reservation)
-        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację', command=self.remove_reservation)
-        self.button_edit_reservation = Button(self.frame_details, text='Edytuj rezerwację', command=self.edit_reservation)
+        self.button_remove_reservation = Button(self.frame_details, text='Usuń rezerwację',
+                                                command=self.remove_reservation)
+        self.button_edit_reservation = Button(self.frame_details, text='Edytuj rezerwację',
+                                              command=self.edit_reservation)
 
-
+        # sekcja odpowiedzialna za to gdzie się znajdują
 
         self.label_details.grid(row=0, columnspan=2, pady=10)
         self.label_name.grid(row=1, column=0, sticky=W)
@@ -182,17 +163,22 @@ class CentreManager:
         self.button_remove_reservation.grid(row=12, column=0, pady=5, sticky=E)
         self.button_edit_reservation.grid(row=13, column=0, pady=5)
 
-
+    # ustawienie mapy i jej położenia
 
     def setup_map_frame(self):
         self.map_widget = tkintermapview.TkinterMapView(self.frame_map, width=800, height=800, corner_radius=0)
         self.map_widget.pack(fill=BOTH, expand=True)
 
+
+    # Główne funkcje odpowiadające za poprawne działanie programu
+    
+        # odświeżenie listy z centrami
     def refresh_centre_list(self):
         self.listbox_centres.delete(0, END)
         for centre in self.centres:
             self.listbox_centres.insert(END, centre['name'])
 
+        # pokazanie szczegółów danego centrum
     def show_centre_details(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
@@ -211,9 +197,11 @@ class CentreManager:
 
             self.show_selected_centre_on_map()
 
+
+        # pokazanie markera wybranego centrum na mapie
     def show_selected_centre_on_map(self):
-        self.map_widget.set_zoom(6)  # Center map on Poland with zoom 6
-        self.map_widget.set_position(52.2297, 19.0122)
+        self.map_widget.set_zoom(6)                                     # centrowanie mapy z zoomem 6
+        self.map_widget.set_position(52.2297, 19.0122)     # centrowanie mapy na centrum Polski
         self.map_widget.delete_all_marker()
 
         location = self.geolocator.geocode(self.selected_centre['location'])
@@ -221,6 +209,7 @@ class CentreManager:
             self.map_widget.set_position(location.latitude, location.longitude)
             self.map_widget.set_marker(location.latitude, location.longitude, text=self.selected_centre['name'])
 
+        # pokazanie rezerwacji danego klienta
     def show_reservation_centres(self):
         selected_client_index = self.listbox_clients.curselection()
         if selected_client_index:
@@ -234,6 +223,8 @@ class CentreManager:
                     break
             self.show_client_reservations_on_map()
 
+
+        # dodanie centrum do listy centrów
     def add_centre(self):
         name = self.entry_name.get()
         location = self.entry_location.get()
@@ -241,12 +232,16 @@ class CentreManager:
             self.centres.append({"name": name, "location": location, "clients": [], "employees": []})
             self.refresh_centre_list()
 
+
+        # usunięcie centrum z listy centrów
     def remove_centre(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
             self.centres.pop(selected_index[0])
             self.refresh_centre_list()
 
+
+        # aktualizacja danych dla wybranego centrum
     def update_centre(self):
         selected_index = self.listbox_centres.curselection()
         if selected_index:
@@ -255,6 +250,8 @@ class CentreManager:
                                                "employees": self.selected_centre['employees']}
             self.refresh_centre_list()
 
+
+        # dodanie klienta do listy klientów
     def add_client(self):
         if not self.selected_centre:
             return
@@ -265,6 +262,8 @@ class CentreManager:
             self.show_centre_details()
             self.entry_client_name.delete(0, END)
 
+
+        # usunięcie klienta z listy klientów
     def remove_client(self):
         selected_index = self.listbox_clients.curselection()
         if not selected_index:
@@ -273,6 +272,8 @@ class CentreManager:
         self.listbox_clients.delete(selected_index[0])
         self.show_centre_details()
 
+
+        # aktualizacja danych wybranego klienta
     def edit_client(self):
         selected_index = self.listbox_clients.curselection()
         if not selected_index:
@@ -283,7 +284,6 @@ class CentreManager:
             self.listbox_clients.delete(selected_index[0])
             self.listbox_clients.insert(selected_index[0], new_name)
             self.entry_client_name.delete(0, END)
-
 
     def add_employee(self):
         if not self.selected_centre:
@@ -343,6 +343,7 @@ class CentreManager:
             self.refresh_reservations_list()
             self.entry_reservation_name.delete(0, END)
             self.show_client_reservations_on_map()
+
     def clear_details(self):
         self.entry_name.delete(0, END)
         self.entry_location.delete(0, END)
@@ -381,6 +382,7 @@ def main():
 
     login_window = LoginWindow(root, on_login_success)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
