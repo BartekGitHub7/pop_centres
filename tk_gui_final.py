@@ -3,6 +3,10 @@ import tkintermapview
 from geopy.geocoders import Nominatim
 from centre_data import centres
 
+
+    # APLIKACJA DO ZARZĄDZANIA CENTRAMI KONFERENCYJNYMI "CentreManager"
+
+
 dane_logowania = {
     "admin": "2137"
 }
@@ -285,6 +289,8 @@ class CentreManager:
             self.listbox_clients.insert(selected_index[0], new_name)
             self.entry_client_name.delete(0, END)
 
+
+        # dodanie pracownika do listy pracowników
     def add_employee(self):
         if not self.selected_centre:
             return
@@ -295,6 +301,8 @@ class CentreManager:
             self.show_centre_details()
             self.entry_employee_name.delete(0, END)
 
+
+        # usunięcie pracownika z listy pracowników
     def remove_employee(self):
         selected_index = self.listbox_employees.curselection()
         if not selected_index:
@@ -303,6 +311,8 @@ class CentreManager:
         self.listbox_employees.delete(selected_index[0])
         self.show_centre_details()
 
+
+        # aktualizacja danych wybranego pracownika
     def edit_employee(self):
         selected_index = self.listbox_employees.curselection()
         if not selected_index:
@@ -314,12 +324,16 @@ class CentreManager:
             self.listbox_employees.insert(selected_index[0], new_name)
             self.entry_employee_name.delete(0, END)
 
+
+        # odświeżenie listy rezerwacji
     def refresh_reservations_list(self):
         self.listbox_reservations.delete(0, END)
         if self.selected_client:
             for reservation in self.selected_client["reservation"]:
                 self.listbox_reservations.insert(END, reservation)
 
+
+        # dodanie rezerwacji do listy rezerwacji
     def add_reservation(self):
         reservation = self.entry_reservation_name.get()
         if reservation and self.selected_client:
@@ -328,6 +342,8 @@ class CentreManager:
             self.entry_reservation_name.delete(0, END)
             self.show_client_reservations_on_map()
 
+
+        # usunięcie rezerwacji z listy rezerwacji
     def remove_reservation(self):
         selected_index = self.listbox_reservations.curselection()
         if selected_index and self.selected_client:
@@ -335,6 +351,8 @@ class CentreManager:
             self.refresh_reservations_list()
             self.show_client_reservations_on_map()
 
+
+        # aktualizacja danych danej rezerwacji
     def edit_reservation(self):
         selected_index = self.listbox_reservations.curselection()
         new_reservation = self.entry_reservation_name.get()
@@ -344,6 +362,8 @@ class CentreManager:
             self.entry_reservation_name.delete(0, END)
             self.show_client_reservations_on_map()
 
+
+        # czyszczenie pól ze szczegółami
     def clear_details(self):
         self.entry_name.delete(0, END)
         self.entry_location.delete(0, END)
@@ -351,6 +371,8 @@ class CentreManager:
         self.listbox_employees.delete(0, END)
         self.listbox_reservations.delete(0, END)
 
+
+        # pokazanie markerów wszystkich centrów na mapie
     def show_all_centres_on_map(self):
         self.map_widget.set_position(52.2296756, 19.0122287)
         self.map_widget.set_zoom(6)
@@ -358,7 +380,10 @@ class CentreManager:
             location = self.geolocator.geocode(centre['location'])
             if location:
                 self.map_widget.set_marker(location.latitude, location.longitude, text=centre['name'])
+                self.clear_details()
 
+
+        # pokazywanie na mapie markerów centrów, w których są rezerwacje
     def show_client_reservations_on_map(self):
         if self.selected_client:
             self.map_widget.set_position(52.2296756, 19.0122287)
@@ -373,16 +398,18 @@ class CentreManager:
                         break
 
 
+        # Uruchomienie aplikacji
 def main():
-    root = Tk()
+    root = Tk()          # tworzenie głównego okna aplikacji, 'root' to główne okno
 
+        # funkcja wywoływana po udanym zalogowaniu
     def on_login_success():
-        login_window.frame_login.pack_forget()
-        CentreManager(root)
+        login_window.frame_login.pack_forget()      # usunięcie okna logowania
+        CentreManager(root)                         # utworzenie głównego okna aplikacji poprzez przywołanie 'root'
 
-    login_window = LoginWindow(root, on_login_success)
-    root.mainloop()
+    login_window = LoginWindow(root, on_login_success)  # utworzenie okna logowania, 'on_login_succes' używane dopiero po poprawnym zalogowaniu
+    root.mainloop()                                 # uruchomienie głównej pętli Tkinter, czyli utrzymanie aplikacjiw aktywnym stanie, aby odpowiadała na polecenia
 
-
-if __name__ == "__main__":
+        # sprawdzenie czy kod jest uruchamiany bezpośrednio, jeśli tak - wywołuje main(), co włącza aplikację
+if __name__ == '__main__':
     main()
