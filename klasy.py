@@ -63,8 +63,45 @@ drzewo = Drzewo(wysokosc, srednica)
 print(f"Objętość drzewa: {drzewo.oblicz_objetosc()} m^3")
 
 
+    # napisz klase ktora bedzie sumowala wartosci od 1 do 10
 
-    # przykładowa pętle
+class Suma:
+    def __init__(self, wartosc):
+        self.wartosc = wartosc
+    def oblicz_sume(self):
+        suma = 0
+        for i in range(0, self.wartosc+1):
+            suma += i
+        return suma
+suma = Suma(10)
+print(suma.oblicz_sume())
+
+
+class Parzyste:
+    def __init__(self):
+        self.liczba = 0
+    def wypisz(self):
+        for liczba in range(self.liczba, 101):
+            if liczba %2 == 0:
+                print(liczba)
+Parzyste().wypisz()
+
+ # napisz klase ktora bedzie odejmowala wartosci od 10 do 1
+class OdejmowanieOdDziesieciu:
+    def __init__(self):
+        self.liczba = 10
+
+    def odejmij(self):
+        while self.liczba >= 1:
+            print(self.liczba)
+            self.liczba -= 1
+
+
+    # Użycie klasy:
+odejmowanie = OdejmowanieOdDziesieciu()
+odejmowanie.odejmij()
+
+            # przykładowa pętle
         # napisz pętle, która bedzie odliczała od 1000 do 0 z krokiem 50 i wyświetlała przy tym odliczana wartości
 
 i = 1000
