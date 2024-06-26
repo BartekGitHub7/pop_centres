@@ -38,7 +38,7 @@ class LoginWindow:
         username = self.entry_username.get()
         password = self.entry_password.get()
         if username in dane_logowania and dane_logowania[username] == password:
-            self.on_login_success()                              # wywołane przy poprawnym logowaniu
+            self.on_login_success()                              # funkcja wywołana przy poprawnym logowaniu
         else:
             self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')   # fg oznacza foreground i okresla kolor w jakim ma byc data zmienna
             self.label_error.grid(row=3, columnspan=2, pady=5)

@@ -1,3 +1,9 @@
+
+
+        # LISTA centrów, klientów ich rezerwacji i pracowników
+
+
+
 centres = [
     {"name": "Centrum Konferencyjne w Warszawie", "location": "Warszawa", "clients": [{"name": "Mariusz Pudzianowski",
                                                                                        "reservation": [
