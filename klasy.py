@@ -1,3 +1,7 @@
+
+            # PRZYKLADOWE KLASY na 5-minutowke: trening
+
+
     # napisz klase ktora bedzie obliczala predkosc pojazdu na podstawie czasu w jakim pokonał on określony odcinek
 class KalkulatorPredkosciPojazdu:
     def __init__(self, dystans, czas):
