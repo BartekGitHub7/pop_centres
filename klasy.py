@@ -10,14 +10,14 @@ class KalkulatorPredkosciPojazdu:
         predkosc = self.dystans / self.czas
         return predkosc
 def wprowadz_dane():
-    dystans = float(input("Wprowadzy dystans czas: "))
-    czas = float(input("Wprowadzy czas czas: "))
+    dystans = float(input("Wprowadz dystans: "))
+    czas = float(input("Wprowadz czas: "))
     return dystans, czas
 
     # Przykładowe użycie
 dystans, czas = wprowadz_dane()
-dystans1 = KalkulatorPredkosciPojazdu(dystans, czas)
-print(f"Prędkość pojazdu: {dystans1.oblicz_predkosc()} km/h")
+dystans_obliczony = KalkulatorPredkosciPojazdu(dystans, czas)
+print(f"Prędkość pojazdu: {dystans_obliczony.oblicz_predkosc()} km/h")
 
 
 

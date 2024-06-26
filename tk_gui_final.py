@@ -38,9 +38,9 @@ class LoginWindow:
         username = self.entry_username.get()
         password = self.entry_password.get()
         if username in dane_logowania and dane_logowania[username] == password:
-            self.on_login_success()
+            self.on_login_success()                              # wywołane przy poprawnym logowaniu
         else:
-            self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')
+            self.label_error = Label(self.frame_login, text='Invalid username or password', fg='red')   # fg oznacza foreground i okresla kolor w jakim ma byc data zmienna
             self.label_error.grid(row=3, columnspan=2, pady=5)
 
 
@@ -93,7 +93,7 @@ class CentreManager:
         self.button_update_centre = Button(self.frame_list, text='Edytuj centrum', command=self.update_centre)
         self.button_show_all_centres = Button(self.frame_list, text='Pokaż wszystkie centra', command=self.show_all_centres_on_map)
 
-        self.label_list.pack(pady=5)
+        self.label_list.pack(pady=5)                    # .pack układa wszystko jedno po drugim lub jedno pod drugim
         self.listbox_centres.pack(pady=5)
         self.button_show_all_centres.pack(pady=5)
         self.button_show_details.pack(side=LEFT, padx=5)
@@ -141,7 +141,7 @@ class CentreManager:
 
         # sekcja odpowiedzialna za to gdzie się znajdują
 
-        self.label_details.grid(row=0, columnspan=2, pady=10)
+        self.label_details.grid(row=0, columnspan=2, pady=10)               # .grid układa w formie siatki (wiersze i kolumny)
         self.label_name.grid(row=1, column=0, sticky=W)
         self.entry_name.grid(row=1, column=1, columnspan=1, pady=5, sticky=W)
         self.label_location.grid(row=2, column=0, sticky=W)
